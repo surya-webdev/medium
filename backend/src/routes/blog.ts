@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
+import { blogInputs } from "@surya_dev_/medium-common";
 import { Hono } from "hono";
-
 import { verify } from "hono/jwt";
 
 export const blogRoute = new Hono<{
@@ -26,20 +26,28 @@ blogRoute.use("/*", async (c, next) => {
   const header = c.req.header("authorization") || "";
 
   const token = header || "";
+  try {
+    const user = (await verify(token, c.env.JWT_SECERET)) || "";
+    /////
+    console.log(user);
 
-  const user = (await verify(token, c.env.JWT_SECERET)) || "";
-  /////
-  console.log(user);
-
-  if (user.id) {
-    c.set("jwtPayload", user);
-    await next();
-  } else {
+    if (user.id) {
+      c.set("jwtPayload", user);
+      await next();
+    } else {
+      c.status(403);
+      return c.json({
+        message: "Your'e not logged in :(((",
+      });
+    }
+  } catch (error) {
+    console.error(error);
     c.status(403);
     return c.json({
       message: "Your'e not logged in :(((",
     });
   }
+  //////////////////
 });
 
 blogRoute.post("/post", async (c) => {
@@ -51,6 +59,14 @@ blogRoute.post("/post", async (c) => {
   const id = c.get("jwtPayload");
 
   const body = await c.req.json();
+
+  const { success } = blogInputs.safeParse(body);
+  if (!success) {
+    c.status(411);
+    return c.json({
+      message: "Inputs are not valid!!!",
+    });
+  }
 
   if (id && (body.title || body.content)) {
     //
@@ -71,15 +87,11 @@ blogRoute.post("/post", async (c) => {
       c.status(411);
       return c.json({ message: "ERROR WHILE FETCHING" });
     }
-    //
   } else {
     c.status(300);
     return c.text("PLEASE GIVE A VALID BLOG");
   }
-  //
 });
-
-//
 
 blogRoute.put("/:id/edit", async (c) => {
   //
@@ -89,9 +101,16 @@ blogRoute.put("/:id/edit", async (c) => {
 
   const body = await c.req.json();
 
-  const authorId = c.get("jwtPayload");
+  const { success } = blogInputs.safeParse(body);
 
-  console.log(authorId);
+  if (!success) {
+    c.status(411);
+    return c.json({
+      message: "Inputs are not valid!!!",
+    });
+  }
+
+  const authorId = c.get("jwtPayload");
 
   const id = c.req.param("id");
 
@@ -154,14 +173,13 @@ blogRoute.get("/:id", async (c) => {
 
   const id = c.req.param("id");
 
-  if (id) {
-    const blogs = await prisma.post.findUnique({
-      where: {
-        id,
-      },
-    });
-    return c.json({ blogs });
-  } else {
+  const blogs = await prisma.post.findUnique({
+    where: {
+      id,
+    },
+  });
+  if (blogs) return c.json({ blogs });
+  else {
     c.status(411);
     return c.json({
       message: "No blogs by the user",

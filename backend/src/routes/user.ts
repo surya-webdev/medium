@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
+import { userSignup, userSignin } from "@surya_dev_/medium-common";
 
 export const userRoute = new Hono<{
   Bindings: {
@@ -25,6 +26,15 @@ userRoute.post("/signup", async (c) => {
   }).$extends(withAccelerate());
 
   const body = await c.req.json();
+
+  const { success } = userSignup.safeParse(body);
+
+  if (!success) {
+    c.status(411);
+    return c.json({
+      message: "Inputs are not valid!!!",
+    });
+  }
 
   if (!body.email) return c.text("ENTER THE CORRECT VALIDATION");
 
@@ -72,6 +82,15 @@ userRoute.post("/signin", async (c) => {
   //token to verify , email & PASSOWORD
   const body = await c.req.json();
 
+  const { success } = userSignin.safeParse(body);
+
+  if (!success) {
+    c.status(411);
+    return c.json({
+      message: "Inputs are not valid!!!",
+    });
+  }
+
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -80,7 +99,7 @@ userRoute.post("/signin", async (c) => {
       },
     });
 
-    console.log(user);
+    // console.log(user);
 
     if (user) {
       const checkIsUser = await sign({ id: user.id }, c.env.JWT_SECERET);
@@ -90,6 +109,7 @@ userRoute.post("/signin", async (c) => {
       c.status(403);
       return c.text("NO USER FOUND");
     }
+    //
   } catch (error) {
     console.error(error);
     c.status(411);
