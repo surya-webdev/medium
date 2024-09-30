@@ -132,6 +132,7 @@ blogRoute.put("/:id/edit", async (c) => {
       return c.json({ user });
     } catch (error) {
       console.error(error);
+      c.status(400);
       return c.json({ error: "FAILDED WHILE FETCHING!" });
     }
   } else {
@@ -149,8 +150,21 @@ blogRoute.post("/bulk", async (c) => {
     const prisma = new PrismaClient({
       datasourceUrl: c.env.DATABASE_URL,
     }).$extends(withAccelerate());
-    const blogs = await prisma.post.findMany();
-    console.log(blogs);
+    const blogs = await prisma.post.findMany({
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        published: true,
+        authorId: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
     if (blogs) {
       return c.json({ blogs });
     } else {
@@ -177,6 +191,21 @@ blogRoute.get("/:id", async (c) => {
     where: {
       id,
     },
+
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      published: true,
+      authorId: true,
+      author: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    //
   });
   if (blogs) return c.json({ blogs });
   else {
