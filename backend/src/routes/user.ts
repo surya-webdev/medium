@@ -116,3 +116,5 @@ userRoute.post("/signin", async (c) => {
     return c.json({ message: "ERROR WHILE FETCHING" });
   }
 });
+
+// user blogs

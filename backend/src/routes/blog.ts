@@ -215,3 +215,39 @@ blogRoute.get("/:id", async (c) => {
     });
   }
 });
+
+// return the user's blogs
+
+blogRoute.get("/user/:authorid", async (c) => {
+  const authorid = c.req.param("authorid");
+
+  try {
+    const prisma = new PrismaClient({
+      datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+
+    const blogs = await prisma.user.findUnique({
+      where: {
+        id: authorid,
+      },
+      select: {
+        id: true,
+        name: true,
+        posts: true,
+      },
+    });
+
+    // if (!blogs?.posts.length) {
+    //   c.status(400);
+    //   return c.json({ message: "No blogs found" });
+    // }
+    return c.json({ blogs });
+  } catch {
+    c.status(411);
+    return c.json({
+      message: "No blogs by the user",
+    });
+  }
+
+  return c.json({});
+});

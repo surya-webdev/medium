@@ -8,7 +8,6 @@
 // };
 
 import { Link } from "react-router-dom";
-import { blogsInput } from "../helpers/types";
 
 export default function BlogCard({ blog }) {
   const { author, authorId, title, content, id } = blog;
@@ -21,7 +20,7 @@ export default function BlogCard({ blog }) {
             {author.name.split("").at(0)}
           </span>
           <p className="cursor-pointer font-bold">
-            <Link to={`/${authorId}`}>{author.name}</Link>
+            <Link to={`/user/${authorId}`}>{author.name}</Link>
           </p>
         </div>
         <div className="flex flex-col gap-2">

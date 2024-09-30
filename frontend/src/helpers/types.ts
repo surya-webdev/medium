@@ -9,3 +9,9 @@ export interface blogsInput {
   id: string;
   published: string;
 }
+
+export interface userBlogs {
+  id: string;
+  name: string;
+  posts: any;
+}

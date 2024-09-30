@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { BACKEND_URL } from "../config";
 import BlogCard from "../components/BlogCard";
 import { blogsInput } from "../helpers/types";
+import { Link } from "react-router-dom";
 // import { BlogInputs } from "@surya_dev_/medium-common";
 
 export default function Blogs() {
@@ -57,6 +58,9 @@ export default function Blogs() {
   return (
     <section className="flex w-full flex-col items-center justify-start px-2 md:my-10">
       <div className="py-2 text-xl font-bold text-blue-600">BLOGS</div>
+      <div>
+        <Link to={"/post"}>+</Link>
+      </div>
       {isBlogs.map((blog) => {
         return <BlogCard blog={blog} key={blog.id} />;
       })}

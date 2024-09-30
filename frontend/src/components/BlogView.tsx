@@ -6,7 +6,9 @@ import { blogsInput } from "../helpers/types";
 
 export default function BlogView() {
   const { id } = useParams();
-  const [blog, setBlog] = useState<blogsInput>([]);
+
+  const [blog, setBlog] = useState<blogsInput[]>([]);
+
   const [isLoading, setIsLoading] = useState(false);
   const token = localStorage.getItem("token");
 
@@ -51,7 +53,7 @@ export default function BlogView() {
             {blog.author?.name.split("")[0]}
           </span>
           <p className="cursor-pointer font-bold">
-            <Link to={`/${blog.authorId}`}>{blog.author?.name}</Link>
+            <Link to={`/user/${blog.authorId}`}>{blog.author?.name}</Link>
           </p>
         </div>
         <div className="flex flex-col gap-2">
